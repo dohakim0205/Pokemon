@@ -1,5 +1,6 @@
 package Zombie_Game;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 class Play {
@@ -12,16 +13,20 @@ class Play {
 	private final int ROAD;
 	private final int PLAYER;
 	private final int WALL;
+	private ArrayList<Zombie> monster;
 
 	public Play() {
+		this.monster = new ArrayList<Zombie>();
+		this.boss = new Boss();
+		makeZombie();
+		System.out.println(this.monster.get(0).getName());
+		this.zombie = this.monster.get(this.monster.size() - 1);
 		this.SIZE = 10;
 		this.ROAD = 0;
 		this.PLAYER = 1;
 		this.WALL = 2;
 		this.hero = new Hero();
-		this.boss = new Boss();
-		this.zombie = new Zombie();
-		if(this.zombie.getPos() == this.boss.getPos()) {
+		if (this.zombie.getPos() == this.boss.getPos()) {
 			zombie = new Zombie();
 		}
 		this.map = new int[this.SIZE][this.SIZE];
@@ -121,26 +126,26 @@ class Play {
 		this.hero.setFriends(temp);
 	}
 
-	private void meetTogephy() {
-		System.out.println("[으악....!]");
-		delay();
-		System.out.println("[너무 귀여워...]");
-		delay();
-		System.out.println("[토게피를 안고 가기로 했다]");
-		delay();
-		addFriend();
-		System.out.println("동료가 생겼습니다 ! - 귀여운 토게피");
-	}
-
 	private void meetGorapaduck() {
 		System.out.println("[으악....!]");
-		delay();
+		Play.delay();
 		System.out.println("[너무 바보 같아...]");
-		delay();
+		Play.delay();
 		System.out.println("[고라파덕이 따라 온다]");
-		delay();
+		Play.delay();
 		addFriend();
 		System.out.println("동료가 생겼습니다 ! - 고라파덕");
+	}
+
+	private void meetTogephy() {
+		System.out.println("[으악....!]");
+		Play.delay();
+		System.out.println("[너무 귀여워...]");
+		Play.delay();
+		System.out.println("[토게피를 안고 가기로 했다]");
+		Play.delay();
+		addFriend();
+		System.out.println("동료가 생겼습니다 ! - 귀여운 토게피");
 	}
 
 	private Unit ismatchEnemy() {
@@ -169,15 +174,26 @@ class Play {
 	private void fightOrHeal(Unit enemy) {
 		while (true) {
 			delay();
-			System.out.println("1) 공격하기 2) 포션 마시기");
+			System.out.println("1) 공격하기 2) 포션 마시기 3) *자동전투*");
 			int input = Main.CheckInt();
 			if (input == 1) {
 				if (fight(enemy))
 					return;
 			}
 
-			else
+			else if (input == 2) {
 				heal();
+			}
+
+			else if (input == 3) {
+				while (!fight(enemy)) {
+					if (this.hero.getHp() < 50) {
+						heal();
+					}
+				}
+
+				return;
+			}
 		}
 	}
 
@@ -212,9 +228,35 @@ class Play {
 		System.out.println("히어로의 공격력이 5 늘어납니다.");
 		this.hero.setPower(this.hero.getPower() + 5);
 		System.out.println("[공격력 : " + this.hero.getPower() + "]");
-		this.boss = new Boss();
-		this.zombie = new Zombie();
+		if (this.boss.getHp() <= 0) {
+			this.boss = new Boss();
+		}
+
+		else if (this.zombie.getHp() <= 0) {
+			makeZombie();
+		}
 		this.hero.setPos(0);
+	}
+
+	private void makeZombie() {
+		String[] monsters = new String[] { "ggobuk", "pairi", "ggomadol", "mazayong", "togephi", "gorapaduck" };
+		String className = "Zombie_Game." + monsters[Unit.r.nextInt(monsters.length)];
+
+		try {
+			Class<?> clazz = Class.forName(className);
+			Object object = clazz.getDeclaredConstructor().newInstance();
+			if (object instanceof Zombie) {
+				Zombie zombiee = (Zombie) object;
+				this.monster.add(zombiee);
+				this.zombie = this.monster.get(this.monster.size() - 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		if (this.boss.getPos() == this.zombie.getPos()) {
+			makeZombie();
+		}
 	}
 
 	private void enemyWin() {
